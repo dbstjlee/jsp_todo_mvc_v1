@@ -8,6 +8,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+import com.tenco.model.TodoDAO;
+import com.tenco.model.TodoDAOImpl;
+import com.tenco.model.TodoDTO;
 import com.tenco.model.UserDAO;
 import com.tenco.model.UserDAOImpl;
 import com.tenco.model.UserDTO;
@@ -16,6 +19,7 @@ import com.tenco.model.UserDTO;
 public class TestController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private UserDAO userDAO;
+	private TodoDAO todoDAO;
        
     public TestController() {
         super();
@@ -24,15 +28,22 @@ public class TestController extends HttpServlet {
     @Override
     public void init() throws ServletException {
     	userDAO = new UserDAOImpl();
+    	todoDAO = new TodoDAOImpl();
     }
     
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String action = request.getPathInfo();
 		switch (action) {
+		// http://localhost:8080/mvc/test/byId
 		case "/byId":
-			// http://localhost:8080/mvc/test/byId
-			//userDAO.getUserById(1);
-			// userDAO.getUserByUsername("홍길동");
+			
+			// select - Id
+//			userDAO.getUserById(1);
+			
+			// select - Username
+//			userDAO.getUserByUsername("홍길동");
+			
+			// select - All
 //			List<UserDTO> list = userDAO.getAllUsers();
 //			if(list.size() == 0) {
 //				
@@ -44,7 +55,39 @@ public class TestController extends HttpServlet {
 			System.out.println("count : " + count);
 			
 			break;
-
+			// http://localhost:8080/mvc/test/bytodo
+		case "/bytodo":
+			//select - Id
+//			TodoDTO todoDTO = todoDAO.getTodoById(1);
+//			System.out.println(todoDTO.toString());
+			
+			//select - UserId
+//			List<TodoDTO> list = todoDAO.getTodosByUserId(1);
+//			System.out.println(list.toString());
+			
+			
+			//select - All
+//			System.out.print(todoDAO.getAllTodos().toString());
+			
+			//update
+//			TodoDTO dto1 = TodoDTO.builder()
+//								  .title("타이틀333")
+//								  .description("설명글333")
+//								  .due_date()
+//								  .Completed()
+//								  .id()
+//								  .user_id()
+//								  .build();
+//			int Count = todoDAO.updateTodo(dto1, 3);
+//			System.out.println("Count : " + Count);
+			
+			//todoDAO.updateTodo(new TodoDTO(), 1);
+			
+			//delete
+//			int count1 = todoDAO.deleteTodo(3, 2);
+//			System.out.println("count1 : " + count1);
+			//todoDAO.deleteTodo(5, 6);
+			
 		default:
 			break;
 		}

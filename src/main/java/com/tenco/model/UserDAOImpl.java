@@ -60,13 +60,17 @@ public class UserDAOImpl implements UserDAO {
 	}
 
 	/**
-	 * select 에서 트랜잭션 처리 안 함. but 정합성? 때문에 해야하기도 함. 왜 select 구문에 트랜잭션을 해야 하는가? 1. 임시
-	 * 데이터 뽑음 2. update 3. select -> insert ==> 하나의 트랜잭션으로 묶을 수 있음 중간에 update 해서 값이
-	 * 바뀌면 데이터가 꼬일 수 있음. => 잠깐 막아줘야 함. => 트랜잭션 걸어야 함.
+	 * select 에서 트랜잭션 처리 안 함. but 정합성 때문에 해야하기도 함. 
+	 * 왜 select 구문에 트랜잭션을 해야 하는가? 
+	 * 1. 임시 데이터 뽑음 2. update 3. select -> insert 
+	 * ==> 하나의 트랜잭션으로 묶을 수 있음. 
+	 * ==> 중간에 update 해서 값이 바뀌면 데이터가 꼬일 수 있음. 
+	 * ==> 잠깐 막아줘야 함.(트랜잭션 걸어야 함.)
 	 */
 
 	/**
-	 * SELECT 에서는 일단 트랜잭션 처리를 하지 말자 하지만 팬텀리드현상(정합성을 위해서 처리하는 것도 옳은 방법이다.)
+	 * SELECT에서는 일단 트랜잭션 처리를 하지 말자. 하지만 팬텀리드현상
+	 * (정합성을 위해서 처리하는 것도 옳은 방법이다.)
 	 */
 
 	@Override
@@ -76,8 +80,6 @@ public class UserDAOImpl implements UserDAO {
 		UserDTO userDTO = null;
 
 		try (Connection conn = dataSource.getConnection()) {
-			// conn.setAutoCommit(false);
-
 			try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 				pstmt.setInt(1, id);
 				ResultSet rs = pstmt.executeQuery();
@@ -106,12 +108,9 @@ public class UserDAOImpl implements UserDAO {
 		UserDTO userDTO = null;
 
 		try (Connection conn = dataSource.getConnection()) {
-			// conn.setAutoCommit(false);
-
 			try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 				pstmt.setString(1, username);
 				ResultSet rs = pstmt.executeQuery();
-				// 단일행 ...다중행이면 while문 사용
 				if (rs.next()) {
 					userDTO = new UserDTO();
 					userDTO.setId(rs.getInt("id")); // 데이터 추출, 파싱
@@ -123,10 +122,11 @@ public class UserDAOImpl implements UserDAO {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			// TODO - 삭제 예정
+			System.out.println("UserDTO By Username : " + userDTO.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("UserDTO By Username : " + userDTO.toString());
 		return userDTO;
 	}
 

@@ -5,6 +5,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 
 import com.tenco.model.UserDAO;
@@ -15,6 +17,7 @@ import com.tenco.model.UserDTO;
 // http://localhost:8080/mvc/user/
 // http://localhost:8080/mvc/user/xxx 
 // URL mapping -> /user/*로 받을 수 있음
+// user 밑으로 들어오는 모든 경로를 받아라는 의미
 @WebServlet("/user/*")
 public class UserController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -68,7 +71,7 @@ public class UserController extends HttpServlet {
 		System.out.println("action : " + action);
 		switch (action) {
 		case "/signIn":
-			
+			signIn(request, response);
 			break;
 		case "/signUp":
 			signUp(request, response); //ctrl + 1 : 메서드 생성
@@ -77,6 +80,45 @@ public class UserController extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			break;
 		}
+	}
+
+	/**
+	 * 로그인 처리 기능
+	 * @param request
+	 * @param response
+	 * @throws IOException 
+	 */
+	private void signIn(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		// URL mapping, 인증 검사, 유효성 검사, 서비스 로직, DAO에게 전달 역할, view 호출
+		String username = request.getParameter("username");
+		String password = request.getParameter("password");
+		
+		// 유효성 검사
+		// 이름과 비밀번호가 null이면 로그인 페이지로 던짐.
+		// .trim().isEmpty(): 공백이 있는 문자열도 빈문자열로 인식
+		if(username == null || password.trim().isEmpty()) {
+			response.sendRedirect("signIn?message=invalid");
+			return;
+		}
+		
+		UserDTO user =  userDAO.getUserByUsername(username);// username으로 유저 확인
+		// 빠른 평가
+		if(user != null && user.getPassword().equals(password)) {
+			// 사용자의 세션 메모리에 로그인 정보를 넣음(세션 기반 인증 처리)
+			HttpSession session = request.getSession();
+			session.setAttribute("principal", user); // key 값(principal)은 임의로 설정, 사용자 정보(user) 통으로 넣음.
+			// 로그인 시 session 생성
+			// DB에 있는 데이터까지 전부 들어가 있음.
+			
+			// 로그인 성공 --> 자동으로 todoFrom 화면으로 이동 처리
+			response.sendRedirect("/mvc/todo/todoForm");
+			System.out.println("로그인 처리 완료");
+		} else {
+			response.sendRedirect("signIn?message=invalid"); // 예외 처리
+		}
+		
+		// null <-- 회원가입 X(등록되지 않은 사람)
+		// 비밀번호 == dto.getPassword(); (password 틀림)
 	}
 
 	/**
@@ -110,12 +152,17 @@ public class UserController extends HttpServlet {
 				.email(email)
 				.build();
 		
+		//int resultRowCount = 0;
 		int resultRowCount = userDAO.addUser(userDTO);
 		System.out.println("resultRowCount : " + resultRowCount);
 		if(resultRowCount == 1) {
-			response.sendRedirect("user/signIn?message=success");
+			response.sendRedirect("signIn?message=success");
 		} else {
-			response.sendRedirect("user/signIn?message=error");
+			// 절대경로
+			//response.sendRedirect("/mvc/user/signIn?message=error");
+			// 상대경로
+			// get 방식으로 돌아옴
+			response.sendRedirect("signIn?message=error");
 		}
 		
 		// result.jsp?message
